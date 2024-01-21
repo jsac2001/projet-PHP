@@ -1,25 +1,32 @@
 <?php
+require_once 'config/database.php';
+
 function getAllRecipes() {
-    $recipes = [];
-    $recipeFiles = glob('/Users/juan/Desktop/RecipeApp-main/data/recettes/*.json');
-
-    foreach ($recipeFiles as $recipeFile){
-        $content = file_get_contents($recipeFile);
-        $recipes[] = json_decode($content, true);       
+    global $pdo;
+    
+    try {
+        $sql = "SELECT id, name FROM recipes";
+        $query = $pdo->prepare($sql);
+        $query->execute();
+        $recipes = $query->fetchAll(PDO::FETCH_ASSOC);
+        return $recipes;
+    } catch (\PDOException $e) {
+        throw new \PDOException($e->getMessage(), (int)$e->getCode());
     }
-    return $recipes;
 }
-$recipes = getAllrecipes();
-
-
 
 function getRecipe($id) {
-    $filePath = '/Users/juan/Desktop/RecipeApp-main/data/recettes/' . $id . '.json';
-    if (file_exists($filePath)) {
-        $content = file_get_contents($filePath);
-        return json_decode($content, true);
-    } else {
-        return null;
+    global $pdo;
+
+    try {
+        $sql = "SELECT * FROM recipes WHERE id = :id";
+        $query = $pdo->prepare($sql);
+        $query->bindParam(':id', $id, PDO::PARAM_INT);
+        $query->execute();
+        $recipe = $query->fetch(PDO::FETCH_ASSOC);
+        return $recipe;
+    } catch (\PDOException $e) {
+        throw new \PDOException($e->getMessage(), (int)$e->getCode());
     }
 }
 
